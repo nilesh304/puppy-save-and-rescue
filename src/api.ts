@@ -81,9 +81,16 @@ export const getPetById = ((async (event) => {
 
     // Prepare an sql statement
     const stmt = db.prepare("SELECT * FROM pets WHERE id=:id ");
-
+    console.log("event", event);
+    
+    let petID : Number = 1
+    if(event!=undefined){
+    if (event.pathParameters != undefined) {
+        petID = Number(event.pathParameters.id)
+    }
+}
     // Bind values to the parameters and fetch the results of the query
-    const result = stmt.getAsObject({':id' : 1});
+    const result = stmt.getAsObject({':id' : petID});
 
     return { statusCode: 200, body: JSON.stringify(result) }
 }))
@@ -131,8 +138,20 @@ export const getLostPets = ((async (event) => {
     // Initialize the DB
     let db = await init();
 
+    // const query = db.prepare("SELECT * FROM pets WHERE NOT EXISTS (SELECT pet_id FROM owners_pets")
     // TODO: Finish implementation here
+    // console.log(1);
+    
+    const result = db.exec("SELECT * FROM pets WHERE ID NOT IN (SELECT pet_id  as ID FROM owners_pets)")
+    console.log(result[0].values);
+    var pets = Array()
 
-    return { statusCode: 200 }
+    for (let index = 0; index < result[0].values.length; index++) {
+        const element = result[0].values[index];
+        pets.push({"name":element[1]})   
+    }
+    // var json = JSON.stringify(result)
+    
+    return { statusCode: 200, body: JSON.stringify(pets) }
 }))
 
